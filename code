@@ -1,0 +1,92 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+import cv2
+#from tqdm import tqdm
+import random
+
+DATADIR = "C:\\Users\\user\\Desktop\\CIFAR-10-images-master\\train\\"
+CATEGORIES = ["airplane", "automobile", "bird", "cat", "deer", "dog", "frog", "horse", "ship", "truck"]
+
+dic = {'distance':0,'category':'default', 'img_path':'default'}
+similar_img = []
+i = 0
+img_list = [0]*5
+
+for cate in CATEGORIES: 
+    cate_path = os.path.join(DATADIR,cate)
+    random_img = random.choice(os.listdir(cate_path))
+    random_arr = cv2.imread(os.path.join(cate_path,random_img), cv2.IMREAD_GRAYSCALE)
+    print("Random image of", cate)
+    pos = 1
+    plt.subplot(1, 6, pos)
+    plt.imshow(random_arr, cmap='gray')
+    #plt.show()
+    pos +=1
+    plt.xticks([])
+    plt.yticks([])
+    i = 0
+    for category in CATEGORIES:
+        path = os.path.join(DATADIR,category)
+        
+        for img in os.listdir(path):
+            img_array = cv2.imread(os.path.join(path,img) ,cv2.IMREAD_GRAYSCALE)
+            distance_arr = np.array(abs(random_arr-img_array))
+            manhattan = distance_arr.sum()
+            #plt.imshow(img_array, cmap='gray')
+            #plt.show()  # display!
+            if(manhattan==0):
+                continue
+            #print(manhattan)
+            similar_img.append(manhattan)
+            
+            if(i==5):
+                for j in range(5):
+                    if(manhattan < img_list[j]['distance']):
+                        if(j<4):
+                            img_list[j+1:5] = img_list[j:4]
+                            
+                        dic['distance'] = manhattan
+                        dic['category'] = category
+                        dic['img_path'] = os.path.join(path,img)
+                        img_list[j] = dic.copy()
+                        break
+                    else:
+                        continue
+                        
+            else:
+                dic['distance'] = manhattan
+                dic['category'] = category
+                dic['img_path'] = os.path.join(path,img)
+                img_list[i] = dic.copy()
+                #img_list[i]['distance'] = manhattan
+                #img_list[i]['category'] = category
+                #img_list[i]['img_path'] = os.path.join(path,img)
+                i = i+1
+            #...
+        #...
+    
+    
+    #similar_img.sort()
+    #print(similar_img[:5])
+    #print(img_list)
+    for i in img_list:
+        #print("close Image Distance is", i['distance'])
+        #print("Close Image category is",i['category'])
+        xlabel = str(i['distance'])
+        title = str(i['category'])
+        img_array1 = cv2.imread(i['img_path'] ,cv2.IMREAD_GRAYSCALE)
+        plt.subplot(1,6,pos)
+        plt.imshow(img_array1, cmap='gray')
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.xticks([])
+        plt.yticks([])
+        pos += 1
+    
+    plt.show()# display!
+    img_list = [0]*5
+    similar_img = []
+    #lis = sorted(lis,key = lambda l:l['distance'])
+    #print(lis[:10])
+    #break
